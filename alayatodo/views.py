@@ -1,4 +1,3 @@
-from alayatodo import app
 from flask import (
     g,
     redirect,
@@ -6,6 +5,8 @@ from flask import (
     request,
     session
     )
+
+from alayatodo import app
 
 
 @app.route('/')
@@ -25,7 +26,7 @@ def login_POST():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'";
+    sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'"
     cur = g.db.execute(sql % (username, password))
     user = cur.fetchone()
     if user:

@@ -1,12 +1,12 @@
-from flask import Flask, g
 import sqlite3
+
+from flask import Flask, g
+
 
 # configuration
 DATABASE = '/tmp/alayatodo.db'
 DEBUG = True
 SECRET_KEY = 'development key'
-USERNAME = 'admin'
-PASSWORD = 'default'
 
 
 app = Flask(__name__)
@@ -31,4 +31,4 @@ def teardown_request(exception):
         db.close()
 
 
-import alayatodo.views
+import alayatodo.views  # noqa: E402,F401
