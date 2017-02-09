@@ -41,3 +41,12 @@ class DataAccessObject(object):
 
         sql = 'select * from {} where {}'.format(cls.TABLE, ' and '.join(clauses))
         return sql, params
+
+
+class User(DataAccessObject):
+    TABLE = 'users'
+
+    @classmethod
+    def authenticate(cls, username, password):
+        user = cls.one(*cls.by(username=username, password=password))
+        return dict(user) if user else None

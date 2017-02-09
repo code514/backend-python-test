@@ -8,6 +8,7 @@ from flask import (
     )
 
 from alayatodo import app
+from alayatodo.model import User
 
 
 @app.route('/')
@@ -27,11 +28,9 @@ def login_POST():
     username = request.form.get('username')
     password = request.form.get('password')
 
-    sql = "SELECT * FROM users WHERE username = '%s' AND password = '%s'"
-    cur = g.db.execute(sql % (username, password))
-    user = cur.fetchone()
+    user = User.authenticate(username, password)
     if user:
-        session['user'] = dict(user)
+        session['user'] = user
         session['logged_in'] = True
         return redirect('/todo')
 
