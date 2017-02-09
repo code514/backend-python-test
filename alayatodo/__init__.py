@@ -5,7 +5,6 @@ from flask import Flask, g
 
 # configuration
 DATABASE = '/tmp/alayatodo.db'
-DEBUG = True
 SECRET_KEY = 'development key'
 
 

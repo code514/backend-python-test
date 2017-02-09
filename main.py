@@ -1,7 +1,7 @@
 """AlayaNotes
 
 Usage:
-  main.py [run]
+  main.py [run] [--host=<ip>] [--port=<port>] [--debug]
   main.py initdb
 """
 import subprocess
@@ -31,4 +31,9 @@ if __name__ == '__main__':
         _run_sql('resources/fixtures.sql')
         print "AlayaTodo: Database initialized."
     else:
-        app.run(use_reloader=True)
+        host = args['--host'] or '127.0.0.1'
+        try:
+            port = int(args['--port'])
+        except Exception:
+            port = 5000
+        app.run(host=host, port=port, debug=args['--debug'])
