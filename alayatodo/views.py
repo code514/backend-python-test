@@ -1,6 +1,5 @@
 from flask import (
     flash,
-    g,
     redirect,
     render_template,
     request,
@@ -8,7 +7,7 @@ from flask import (
     )
 
 from alayatodo import app
-from alayatodo.model import User
+from alayatodo.model import Todo, TodoDescriptionError, User
 
 
 @app.route('/')
@@ -46,8 +45,7 @@ def logout():
 
 @app.route('/todo/<id>', methods=['GET'])
 def todo(id):
-    cur = g.db.execute("SELECT * FROM todos WHERE id ='%s'" % id)
-    todo = cur.fetchone()
+    todo = Todo.get(id)
     return render_template('todo.html', todo=todo)
 
 
@@ -56,8 +54,8 @@ def todo(id):
 def todos():
     if not session.get('logged_in'):
         return redirect('/login')
-    cur = g.db.execute("SELECT * FROM todos")
-    todos = cur.fetchall()
+
+    todos = Todo.all()
     return render_template('todos.html', todos=todos)
 
 
@@ -67,16 +65,11 @@ def todos_POST():
     if not session.get('logged_in'):
         return redirect('/login')
 
-    description = request.form.get('description', '').strip()
-    if not description:
+    try:
+        Todo.new(session['user']['id'], request.form.get('description', ''))
+    except TodoDescriptionError:
         flash('Todo requires additional content', 'danger')
         return redirect('/todo')
-
-    g.db.execute(
-        "INSERT INTO todos (user_id, description) VALUES ('%s', '%s')"
-        % (session['user']['id'], description)
-    )
-    g.db.commit()
     return redirect('/todo')
 
 
@@ -84,6 +77,6 @@ def todos_POST():
 def todo_delete(id):
     if not session.get('logged_in'):
         return redirect('/login')
-    g.db.execute("DELETE FROM todos WHERE id ='%s'" % id)
-    g.db.commit()
+
+    Todo.delete(id)
     return redirect('/todo')
