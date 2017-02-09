@@ -1,4 +1,4 @@
-from flask import g
+from alayatodo import connect_db
 
 
 class DataAccessObject(object):
@@ -6,7 +6,8 @@ class DataAccessObject(object):
 
     @classmethod
     def execute(cls, sql, params=None):
-        return g.db.execute(sql, params)
+        db = connect_db()
+        return db.execute(sql, params)
 
     @classmethod
     def one(cls, sql, params=None):
@@ -22,8 +23,9 @@ class DataAccessObject(object):
 
     @classmethod
     def do(cls, sql, params=None):
+        db = connect_db()
         cls.execute(sql, params)
-        g.db.commit()
+        db.commit()
 
     # Query builder
 
@@ -41,6 +43,14 @@ class DataAccessObject(object):
 
         sql = 'select * from {} where {}'.format(cls.TABLE, ' and '.join(clauses))
         return sql, params
+
+    @classmethod
+    def insert(cls, **kwargs):
+        sql = 'insert into {} ({}) values ({})'.format(
+            cls.TABLE,
+            ', '.join(kwargs.keys()),
+            ', '.join(['?'] * len(kwargs.keys())))
+        return sql, kwargs.values()
 
 
 class User(DataAccessObject):
@@ -70,8 +80,7 @@ class Todo(DataAccessObject):
         if not clean_description:
             raise TodoDescriptionError()
 
-        cls.do('insert into todos (user_id, description) values (?, ?)',
-               (user_id, clean_description))
+        cls.do(*cls.insert(user_id=user_id, description=clean_description))
 
 
 class TodoDescriptionError(RuntimeError):
