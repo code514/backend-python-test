@@ -13,9 +13,12 @@ app.config.from_object(__name__)
 
 
 def connect_db():
-    conn = sqlite3.connect(app.config['DATABASE'])
-    conn.row_factory = sqlite3.Row
-    return conn
+    db = getattr(g, '_db', None)
+    if db is None:
+        db = sqlite3.connect(app.config['DATABASE'])
+        db.row_factory = sqlite3.Row
+        g._db = db
+    return db
 
 
 @app.before_request
@@ -23,9 +26,9 @@ def before_request():
     g.db = connect_db()
 
 
-@app.teardown_request
-def teardown_request(exception):
-    db = getattr(g, 'db', None)
+@app.teardown_appcontext
+def close_db(exception):
+    db = getattr(g, '_db', None)
     if db is not None:
         db.close()
 

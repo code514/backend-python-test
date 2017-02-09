@@ -24,7 +24,6 @@ Credentials:
 ### Requirements
 * python 2.7
 * virtualenv
-* sqlite3
 * A github account
 
 ### Installation
