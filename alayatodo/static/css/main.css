@@ -31,3 +31,17 @@ body {
 #create-todo-button {
   width: 100%;
 }
+
+.paging {
+  text-align: center;
+}
+
+.paging > ul {
+  margin: 0;
+}
+
+.paging li.disabled > span,
+.paging li.disabled > span:hover {
+  cursor: default;
+  background-color: #f0f0f0;
+}

@@ -81,8 +81,15 @@ class Todo(DataAccessObject):
         return cls.one(*cls.by(id=id))
 
     @classmethod
-    def for_user(cls, user_id):
-        return cls.many(*cls.by(user_id=user_id))
+    def for_user(cls, user_id, limit=None, offset=None):
+        sql, params = cls.by(user_id=user_id)
+
+        if limit is not None:
+            sql += ' limit {}'.format(limit)
+            if offset is not None:
+                sql += ' offset {}'.format(offset)
+
+        return cls.many(sql, params)
 
     @classmethod
     def complete(cls, id):

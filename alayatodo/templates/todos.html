@@ -19,18 +19,41 @@
                 </td>
                 <td class="todo-actions">
                     {% if not todo.completed %}
-                        <form method="post" action="{{ url_for('todo_POST', id=todo.id) }}">
+                        <form method="post" action="{{ url_for('todo_POST', id=todo.id, page=page) }}">
                             <input type="hidden" name="completed" value="1">
                             <button type="submit" class="btn btn-xs btn-success"><span class="glyphicon glyphicon-ok glyphicon-white"></span></button>
                         </form>
                     {% endif %}
-                    <form method="post" action="{{ url_for('todo_POST', id=todo.id) }}">
+                    <form method="post" action="{{ url_for('todo_POST', id=todo.id, page=page) }}">
                         <input type="hidden" name="description" value="">
                         <button type="submit" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-remove glyphicon-white"></span></button>
                     </form>
                 </td>
             </tr>
         {% endfor %}
+        {% if pages %}
+        <tr>
+            <td colspan="3" class="paging">
+                <ul class="pagination">
+                    {% if pages[0] != 1 %}
+                        <li><a href="?page=1">1</a></li>
+                        {% if pages[0] != 2 %}
+                            <li class="disabled"><span aria-hidden="true">&hellip;</span></li>
+                        {% endif %}
+                    {% endif %}
+                    {% for i in pages %}
+                        <li{% if i == page %} class="active"{% endif %}><a href="?page={{ i }}">{{ i }}</a></li>
+                    {% endfor %}
+                    {% if pages[-1] != total_pages %}
+                        {% if pages[-1] != total_pages - 1 %}
+                            <li class="disabled"><span aria-hidden="true">&hellip;</span></li>
+                        {% endif %}
+                        <li><a href="?page={{ total_pages }}">{{ total_pages }}</a></li>
+                    {% endif %}
+                </ul>
+            </td>
+        </tr>
+        {% endif %}
         <tr>
             <td></td>
             <td>

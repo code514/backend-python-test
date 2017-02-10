@@ -54,8 +54,38 @@ def todos():
     if not user:
         return redirect(url_for('login'))
 
-    todos = Todo.for_user(user['id'])
-    return render_template('todos.html', todos=todos)
+    per_page = app.config['TODOS_PER_PAGE']
+    total_pages = (Todo.count(user_id=user['id']) - 1) / per_page + 1
+    try:
+        current_page = int(request.args['page'])
+    except Exception:
+        current_page = 1
+    if current_page < 0:
+        # Negative pages count down from the end, with -1 being the last page
+        current_page = total_pages + current_page + 1
+        if current_page < 0:
+            # Went too far in the negatives
+            current_page = 1
+    if current_page > total_pages:
+        current_page = total_pages
+
+    # Prepare page numbers to show in pagination
+    # Show max 5 pages, centered around current page as best we can
+    min_page = max(1, current_page - 2)
+    max_page = min(total_pages, current_page + (5 - 1 - (current_page - min_page)))
+    # Recompute min in case we don't have enough pages on the right side of the current one
+    min_page = max(1, current_page - (5 - 1 - (max_page - current_page)))
+    pages = [min_page + i for i in range(max_page - min_page + 1)]
+
+    todos = Todo.for_user(user['id'], limit=per_page, offset=(current_page - 1) * per_page)
+
+    return render_template(
+        'todos.html',
+        todos=todos,
+        total_pages=total_pages,
+        page=current_page,
+        pages=pages
+    )
 
 
 @app.route('/todo', methods=['POST'])
@@ -69,7 +99,7 @@ def todos_POST():
         todo = Todo.new(user['id'], request.form.get('description', ''))
     except TodoDescriptionError:
         return goto_todos(error='Todo requires additional content')
-    return goto_todos(success='"{}" created'.format(todo['description']))
+    return goto_todos(success='"{}" created'.format(todo['description']), page=-1)
 
 
 @app.route('/todo/<id>', methods=['GET'])
@@ -130,8 +160,7 @@ def todo_POST(id):
         return goto_todos(success='"{}" completed'.format(todo['description']))
 
 
-
-def goto_todos(info=None, success=None, error=None, warning=None):
+def goto_todos(info=None, success=None, error=None, warning=None, **kwargs):
     if info:
         flash(info, 'info')
     if success:
@@ -141,4 +170,7 @@ def goto_todos(info=None, success=None, error=None, warning=None):
     if warning:
         flash(warning, 'warning')
 
-    return redirect(url_for('todos'))
+    if 'page' not in kwargs:
+        kwargs['page'] = request.args.get('page')
+
+    return redirect(url_for('todos', **kwargs))
