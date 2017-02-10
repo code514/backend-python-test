@@ -18,12 +18,12 @@
                     </a>
                 </td>
                 <td class="todo-actions">
-                    {% if not todo.completed %}
-                        <form method="post" action="{{ url_for('todo_POST', id=todo.id, page=page) }}">
-                            <input type="hidden" name="completed" value="1">
-                            <button type="submit" class="btn btn-xs btn-success"><span class="glyphicon glyphicon-ok glyphicon-white"></span></button>
-                        </form>
-                    {% endif %}
+                    <form method="post" action="{{ url_for('todo_POST', id=todo.id, page=page) }}">
+                        <input type="hidden" name="completed" value="{{ 0 if todo.completed else 1 }}">
+                        <button type="submit" class="btn btn-xs btn-{{ 'warning' if todo.completed else 'success' }}">
+                            <span class="glyphicon glyphicon-{{ 'repeat' if todo.completed else 'ok' }} glyphicon-white"></span>
+                        </button>
+                    </form>
                     <form method="post" action="{{ url_for('todo_POST', id=todo.id, page=page) }}">
                         <input type="hidden" name="description" value="">
                         <button type="submit" class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-remove glyphicon-white"></span></button>

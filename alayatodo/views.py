@@ -155,9 +155,13 @@ def todo_POST(id):
         Todo.delete(id)
         return goto_todos(success='"{}" deleted'.format(todo['description']))
 
-    if request.form.get('completed') == '1':
-        Todo.complete(id)
-        return goto_todos(success='"{}" completed'.format(todo['description']))
+    completed = request.form.get('completed')
+    if completed in ('0', '1'):
+        Todo.complete(id, completed == '1')
+        return goto_todos(success='"{}" {}'.format(
+            todo['description'],
+            'completed' if completed == '1' else 'restored'
+        ))
 
 
 def goto_todos(info=None, success=None, error=None, warning=None, **kwargs):

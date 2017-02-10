@@ -92,8 +92,8 @@ class Todo(DataAccessObject):
         return cls.many(sql, params)
 
     @classmethod
-    def complete(cls, id):
-        cls.do('update todos set completed = 1 where id = ?', (id, ))
+    def complete(cls, id, completed=True):
+        cls.do('update todos set completed = ? where id = ?', ((1 if completed else 0), id))
 
     @classmethod
     def delete(cls, id):
