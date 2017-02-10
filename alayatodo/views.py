@@ -29,31 +29,27 @@ def login_POST():
     password = request.form.get('password')
 
     user = User.authenticate(username, password)
-    if user:
-        session['user'] = user
-        session['logged_in'] = True
-        return redirect(url_for('todos'))
+    if not user:
+        return redirect(url_for('login'))
 
-    return redirect(url_for('login'))
+    session['user'] = {
+        'id': user['id'],
+        'username': user['username']
+    }
+    return redirect(url_for('todos'))
 
 
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
     session.pop('user', None)
     return redirect(url_for('home'))
-
-
-@app.route('/todo/<id>', methods=['GET'])
-def todo(id):
-    todo = Todo.get(id)
-    return render_template('todo.html', todo=todo)
 
 
 @app.route('/todo', methods=['GET'])
 @app.route('/todo/', methods=['GET'])
 def todos():
-    if not session.get('logged_in'):
+    user = session.get('user')
+    if not user:
         return redirect(url_for('login'))
 
     todos = Todo.all()
@@ -63,20 +59,28 @@ def todos():
 @app.route('/todo', methods=['POST'])
 @app.route('/todo/', methods=['POST'])
 def todos_POST():
-    if not session.get('logged_in'):
+    user = session.get('user')
+    if not user:
         return redirect(url_for('login'))
 
     try:
-        Todo.new(session['user']['id'], request.form.get('description', ''))
+        Todo.new(user['id'], request.form.get('description', ''))
     except TodoDescriptionError:
         flash('Todo requires additional content', 'danger')
         return redirect(url_for('todos'))
     return redirect(url_for('todos'))
 
 
+@app.route('/todo/<id>', methods=['GET'])
+def todo(id):
+    todo = Todo.get(id)
+    return render_template('todo.html', todo=todo)
+
+
 @app.route('/todo/<id>', methods=['POST'])
 def todo_delete(id):
-    if not session.get('logged_in'):
+    user = session.get('user')
+    if not user:
         return redirect(url_for('login'))
 
     Todo.delete(id)
