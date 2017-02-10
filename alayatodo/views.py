@@ -3,7 +3,8 @@ from flask import (
     redirect,
     render_template,
     request,
-    session
+    session,
+    url_for
     )
 
 from alayatodo import app
@@ -31,16 +32,16 @@ def login_POST():
     if user:
         session['user'] = user
         session['logged_in'] = True
-        return redirect('/todo')
+        return redirect(url_for('todos'))
 
-    return redirect('/login')
+    return redirect(url_for('login'))
 
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     session.pop('user', None)
-    return redirect('/')
+    return redirect(url_for('home'))
 
 
 @app.route('/todo/<id>', methods=['GET'])
@@ -53,7 +54,7 @@ def todo(id):
 @app.route('/todo/', methods=['GET'])
 def todos():
     if not session.get('logged_in'):
-        return redirect('/login')
+        return redirect(url_for('login'))
 
     todos = Todo.all()
     return render_template('todos.html', todos=todos)
@@ -63,20 +64,20 @@ def todos():
 @app.route('/todo/', methods=['POST'])
 def todos_POST():
     if not session.get('logged_in'):
-        return redirect('/login')
+        return redirect(url_for('login'))
 
     try:
         Todo.new(session['user']['id'], request.form.get('description', ''))
     except TodoDescriptionError:
         flash('Todo requires additional content', 'danger')
-        return redirect('/todo')
-    return redirect('/todo')
+        return redirect(url_for('todos'))
+    return redirect(url_for('todos'))
 
 
 @app.route('/todo/<id>', methods=['POST'])
 def todo_delete(id):
     if not session.get('logged_in'):
-        return redirect('/login')
+        return redirect(url_for('login'))
 
     Todo.delete(id)
-    return redirect('/todo')
+    return redirect(url_for('todos'))
