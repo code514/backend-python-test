@@ -1,5 +1,6 @@
 from flask import (
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -82,6 +83,32 @@ def todo(id):
         return goto_todos(error='Todo not found')
 
     return render_template('todo.html', todo=todo)
+
+
+@app.route('/todo/<id>/json', methods=['GET'])
+def todo_json(id):
+    user = session.get('user')
+    if not user:
+        return jsonify({
+            'success': False,
+            'message': 'Authentication required'
+        }), 403
+
+    todo = Todo.get(id)
+    if todo is None or todo['user_id'] != user['id']:
+        return jsonify({
+            'success': False,
+            'message': 'Todo not found'
+        }), 404
+
+    # Keep resource representations separate from models
+    representation = {
+        'id': todo['id'],
+        'user_id': todo['user_id'],
+        'description': todo['description'],
+        'completed': todo['completed'] == 1
+    }
+    return jsonify(representation)
 
 
 @app.route('/todo/<id>', methods=['POST'])
