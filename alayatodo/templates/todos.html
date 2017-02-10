@@ -12,7 +12,7 @@
         {% for todo in todos %}
             <tr>
                 <td>{{ todo.id }}</td>
-                <td>
+                <td{% if todo.completed %} class="todo-completed"{% endif %}>
                     <a href="{{ url_for('todo', id=todo.id) }}">
                        {{ todo.description }}
                     </a>

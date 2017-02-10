@@ -14,6 +14,11 @@ body {
 }
 
 
+.todo-completed > a {
+  text-decoration: line-through;
+  color: gray;
+}
+
 .todo-actions {
   width: 68px;
   text-align: right;
