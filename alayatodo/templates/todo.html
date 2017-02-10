@@ -4,10 +4,13 @@
 <div class="col-md-4 col-md-offset-4">
     <h1>Todo:</h1>
     <table class="table table-striped">
-        <th>#</th><th>User</th><th>Description</th><th></th>
+        <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th></th>
+        </tr>
         <tr>
             <td>{{ todo.id }}</td>
-            <td>{{ todo.user_id }}</td>
             <td>{{ todo.description }}</td>
             <td>
                 <form method="post" action="{{ url_for('todo_delete', id=todo.id) }}">

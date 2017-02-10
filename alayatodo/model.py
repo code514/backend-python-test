@@ -24,8 +24,9 @@ class DataAccessObject(object):
     @classmethod
     def do(cls, sql, params=None):
         db = connect_db()
-        cls.execute(sql, params)
+        cursor = cls.execute(sql, params)
         db.commit()
+        return cursor
 
     # Query builder
 
@@ -67,8 +68,11 @@ class Todo(DataAccessObject):
 
     @classmethod
     def get(cls, id):
-        sql, params = cls.by(id=id)
-        return cls.one(sql, params)
+        return cls.one(*cls.by(id=id))
+
+    @classmethod
+    def for_user(cls, user_id):
+        return cls.many(*cls.by(user_id=user_id))
 
     @classmethod
     def delete(cls, id):
@@ -80,7 +84,13 @@ class Todo(DataAccessObject):
         if not clean_description:
             raise TodoDescriptionError()
 
-        cls.do(*cls.insert(user_id=user_id, description=clean_description))
+        cursor = cls.do(*cls.insert(user_id=user_id, description=clean_description))
+        return {
+            'id': cursor.lastrowid,
+            'user_id': user_id,
+            'description': clean_description,
+            'completed': 0
+        }
 
 
 class TodoDescriptionError(RuntimeError):

@@ -30,13 +30,14 @@ def login_POST():
 
     user = User.authenticate(username, password)
     if not user:
+        flash('Nope', 'danger')
         return redirect(url_for('login'))
 
     session['user'] = {
         'id': user['id'],
         'username': user['username']
     }
-    return redirect(url_for('todos'))
+    return goto_todos()
 
 
 @app.route('/logout')
@@ -52,7 +53,7 @@ def todos():
     if not user:
         return redirect(url_for('login'))
 
-    todos = Todo.all()
+    todos = Todo.for_user(user['id'])
     return render_template('todos.html', todos=todos)
 
 
@@ -64,16 +65,22 @@ def todos_POST():
         return redirect(url_for('login'))
 
     try:
-        Todo.new(user['id'], request.form.get('description', ''))
+        todo = Todo.new(user['id'], request.form.get('description', ''))
     except TodoDescriptionError:
-        flash('Todo requires additional content', 'danger')
-        return redirect(url_for('todos'))
-    return redirect(url_for('todos'))
+        return goto_todos(error='Todo requires additional content')
+    return goto_todos(success='"{}" created'.format(todo['description']))
 
 
 @app.route('/todo/<id>', methods=['GET'])
 def todo(id):
+    user = session.get('user')
+    if not user:
+        return redirect(url_for('login'))
+
     todo = Todo.get(id)
+    if todo is None or todo['user_id'] != user['id']:
+        return goto_todos(error='Todo not found')
+
     return render_template('todo.html', todo=todo)
 
 
@@ -83,5 +90,22 @@ def todo_delete(id):
     if not user:
         return redirect(url_for('login'))
 
+    todo = Todo.get(id)
+    if todo is None or todo['user_id'] != user['id']:
+        return goto_todos(error='Todo not found')
+
     Todo.delete(id)
+    return goto_todos(success='"{}" deleted'.format(todo['description']))
+
+
+def goto_todos(info=None, success=None, error=None, warning=None):
+    if info:
+        flash(info, 'info')
+    if success:
+        flash(success, 'success')
+    if error:
+        flash(error, 'danger')
+    if warning:
+        flash(warning, 'warning')
+
     return redirect(url_for('todos'))
