@@ -12,3 +12,5 @@ CREATE TABLE todos (
   description VARCHAR(255),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+DROP TABLE IF EXISTS migrations;
