@@ -85,7 +85,7 @@ def todo(id):
 
 
 @app.route('/todo/<id>', methods=['POST'])
-def todo_delete(id):
+def todo_POST(id):
     user = session.get('user')
     if not user:
         return redirect(url_for('login'))
@@ -94,8 +94,14 @@ def todo_delete(id):
     if todo is None or todo['user_id'] != user['id']:
         return goto_todos(error='Todo not found')
 
-    Todo.delete(id)
-    return goto_todos(success='"{}" deleted'.format(todo['description']))
+    if request.form.get('description') == '':
+        Todo.delete(id)
+        return goto_todos(success='"{}" deleted'.format(todo['description']))
+
+    if request.form.get('completed') == '1':
+        Todo.complete(id)
+        return goto_todos(success='"{}" completed'.format(todo['description']))
+
 
 
 def goto_todos(info=None, success=None, error=None, warning=None):

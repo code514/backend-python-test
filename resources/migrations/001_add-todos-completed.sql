@@ -1,0 +1,1 @@
+ALTER TABLE todos ADD COLUMN completed INTEGER(1) DEFAULT 0;

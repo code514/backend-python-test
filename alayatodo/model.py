@@ -75,6 +75,10 @@ class Todo(DataAccessObject):
         return cls.many(*cls.by(user_id=user_id))
 
     @classmethod
+    def complete(cls, id):
+        cls.do('update todos set completed = 1 where id = ?', (id, ))
+
+    @classmethod
     def delete(cls, id):
         cls.do('delete from todos where id = ?', (id, ))
 
@@ -85,12 +89,7 @@ class Todo(DataAccessObject):
             raise TodoDescriptionError()
 
         cursor = cls.do(*cls.insert(user_id=user_id, description=clean_description))
-        return {
-            'id': cursor.lastrowid,
-            'user_id': user_id,
-            'description': clean_description,
-            'completed': 0
-        }
+        return cls.get(cursor.lastrowid)
 
 
 class TodoDescriptionError(RuntimeError):
