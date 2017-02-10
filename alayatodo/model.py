@@ -28,12 +28,18 @@ class DataAccessObject(object):
         db.commit()
         return cursor
 
+    @classmethod
+    def count(cls, **kwargs):
+        return cls.one(*cls.by(_columns='count(*)', **kwargs))[0]
+
     # Query builder
 
     @classmethod
-    def by(cls, **kwargs):
+    def by(cls, _columns='*', **kwargs):
+        columns = _columns if isinstance(_columns, list) else [_columns]
+
         if not kwargs:
-            return 'select * from {}'.format(cls.TABLE), []
+            return 'select {} from {}'.format(', '.join(columns), cls.TABLE), []
 
         clauses = []
         params = []
@@ -42,7 +48,11 @@ class DataAccessObject(object):
             clauses.append('{} = ?'.format(k))
             params.append(v)
 
-        sql = 'select * from {} where {}'.format(cls.TABLE, ' and '.join(clauses))
+        sql = 'select {} from {} where {}'.format(
+            ', '.join(columns),
+            cls.TABLE,
+            ' and '.join(clauses)
+        )
         return sql, params
 
     @classmethod
